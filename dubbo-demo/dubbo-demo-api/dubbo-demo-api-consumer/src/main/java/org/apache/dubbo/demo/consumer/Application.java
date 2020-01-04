@@ -37,7 +37,7 @@ public class Application {
                 .reference(reference)
                 .start();
 
-        String message = ReferenceConfigCache.getCache().get(reference).sayHello("dubbo");
+        String message = ReferenceConfigCache.getCache().get(reference).sayHello("dubbo world");
         System.out.println(message);
     }
 }

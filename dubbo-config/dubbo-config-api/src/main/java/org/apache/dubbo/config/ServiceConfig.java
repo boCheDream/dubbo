@@ -180,15 +180,16 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     public synchronized void export() {
+        //是否应该暴露服务,todo 查清楚export设置值的地方
         if (!shouldExport()) {
             return;
         }
-
+        //初始化服务启动器
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
             bootstrap.init();
         }
-
+        //检查和更新配置
         checkAndUpdateSubConfigs();
 
         //init serviceMetadata
@@ -199,9 +200,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         serviceMetadata.setServiceInterfaceName(getInterface());
         serviceMetadata.setTarget(getRef());
 
+        //是否延迟暴露
         if (shouldDelay()) {
             DELAY_EXPORT_EXECUTOR.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);
         } else {
+            //具体的服务暴露逻辑
             doExport();
         }
     }
@@ -273,17 +276,21 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
 
     protected synchronized void doExport() {
+        //是否终止暴露服务（宕机时设置为true)
         if (unexported) {
             throw new IllegalStateException("The service " + interfaceClass.getName() + " has already unexported!");
         }
+        //服务已经暴露
         if (exported) {
             return;
         }
         exported = true;
 
+        //service地址为服务名称
         if (StringUtils.isEmpty(path)) {
             path = interfaceName;
         }
+        //构建服务暴露的url
         doExportUrls();
 
         // dispatch a ServiceConfigExportedEvent since 2.7.4

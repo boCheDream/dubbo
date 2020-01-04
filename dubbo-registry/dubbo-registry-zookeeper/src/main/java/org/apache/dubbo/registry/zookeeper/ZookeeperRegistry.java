@@ -62,12 +62,24 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     private final static Logger logger = LoggerFactory.getLogger(ZookeeperRegistry.class);
 
+    /**
+     * 默认zookeeper的跟节点 dubbo
+     */
     private final static String DEFAULT_ROOT = "dubbo";
 
+    /**
+     * 根节点
+     */
     private final String root;
 
+    /**
+     * 接口全名集合
+     */
     private final Set<String> anyServices = new ConcurrentHashSet<>();
 
+    /**
+     * 监听器集合
+     */
     private final ConcurrentMap<URL, ConcurrentMap<NotifyListener, ChildListener>> zkListeners = new ConcurrentHashMap<>();
 
     private final ZookeeperClient zkClient;
