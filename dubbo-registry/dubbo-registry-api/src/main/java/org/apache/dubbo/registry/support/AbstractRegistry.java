@@ -404,6 +404,7 @@ public abstract class AbstractRegistry implements Registry {
             logger.info("Notify urls for subscribe url " + url + ", urls: " + urls);
         }
         // keep every provider's category.
+        //将url分类放置
         Map<String, List<URL>> result = new HashMap<>();
         for (URL u : urls) {
             if (UrlUtils.isMatch(url, u)) {
@@ -415,14 +416,17 @@ public abstract class AbstractRegistry implements Registry {
         if (result.size() == 0) {
             return;
         }
+        //获取url在notified的全部url数据,若notified无则创建一个且放入
         Map<String, List<URL>> categoryNotified = notified.computeIfAbsent(url, u -> new ConcurrentHashMap<>());
         for (Map.Entry<String, List<URL>> entry : result.entrySet()) {
             String category = entry.getKey();
             List<URL> categoryList = entry.getValue();
             categoryNotified.put(category, categoryList);
+            //对于所有url进行通知
             listener.notify(categoryList);
             // We will update our cache file after each notification.
             // When our Registry has a subscribe failure due to network jitter, we can return at least the existing cache URL.
+            //当我们的注册表由于网络抖动而出现订阅失败时，我们至少可以返回现有的缓存URL。
             saveProperties(url);
         }
     }
@@ -434,6 +438,13 @@ public abstract class AbstractRegistry implements Registry {
 
         try {
             StringBuilder buf = new StringBuilder();
+            /**
+             * notifies是 被通知的 URL 集合
+             *
+             * key1：消费者的 URL ，例如消费者的 URL ，和 {@link #subscribed} 的键一致
+             * key2：分类，例如：providers、consumers、routes、configurators。【实际无 consumers ，因为消费者不会去订阅另外的消费者的列表】
+             * 在 {@link Constants} 中，以 "_CATEGORY" 结尾
+             */
             Map<String, List<URL>> categoryNotified = notified.get(url);
             if (categoryNotified != null) {
                 for (List<URL> us : categoryNotified.values()) {
@@ -447,6 +458,7 @@ public abstract class AbstractRegistry implements Registry {
             }
             properties.setProperty(url.getServiceKey(), buf.toString());
             long version = lastCacheChanged.incrementAndGet();
+            //同步写入文件还是异步写入文件
             if (syncSaveFile) {
                 doSaveProperties(version);
             } else {
